@@ -1,0 +1,7 @@
+README.md
+setup.cfg
+setup.py
+bolero.egg-info/PKG-INFO
+bolero.egg-info/SOURCES.txt
+bolero.egg-info/dependency_links.txt
+bolero.egg-info/top_level.txt

@@ -1,0 +1,20 @@
+# Ignore data files
+*.pkl
+*.csv
+*.json
+# Except in test
+!test/**/*.pkl
+!test/**/*.csv
+!test/**/*.json
+
+# Editor
+.idea/
+
+# Byte compiled / optimized / DLL files
+__pycache__/
+# **/*.py[cod]
+# *.py[cod]
+
+
+# Distribution / packaging
+*.egg_info/
