@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     pm = PersistenceManager()
 
-    st.header(f'Word bank')
+    # Overview DF
     data = list(pm.client.bolero_data.find())
     for doc in data:
         del doc["_id"]
@@ -44,17 +44,32 @@ if __name__ == "__main__":
 
     data_df = pd.DataFrame(data)
     overview_df = data_df[[c for c in data_df.columns if c not in ["practice_data"]]]
-    overview_df["verb_forms"] = overview_df["verb_forms"].apply(lambda x: ", ".join([v for k, v in x.items()]) if all(list(x.values())) else "---")
-    overview_df["tags"] = overview_df["tags"].apply(lambda x: [v for v in x if v != "NA"] if any([v!="NA" for v in x]) else "---")
-    overview_df["see_also"] = overview_df["see_also"].apply(lambda x: [v for v in x if v != "NA"] if any([v != "NA" for v in x]) else "---")
+    overview_df["verb_forms"] = overview_df["verb_forms"].apply(
+        lambda x: ", ".join([v for k, v in x.items()]) if all(list(x.values())) else "---")
+    overview_df["tags"] = overview_df["tags"].apply(
+        lambda x: [v for v in x if v != "NA"] if any([v != "NA" for v in x]) else "---")
+    overview_df["see_also"] = overview_df["see_also"].apply(
+        lambda x: [v for v in x if v != "NA"] if any([v != "NA" for v in x]) else "---")
+    overview_df = overview_df.set_index('word')
 
-    cols_overview = st.columns([0.1, 5, 0.1])
-    cols_overview[1].dataframe(overview_df[[c for c in overview_df.columns if c != "verb_forms"] + ["verb_forms"]])
-
-    st.subheader(f"Performance Report")
+    # Practice DF
     practice_df = pd.DataFrame(data_df.set_index('word')['practice_data'].to_dict()).T
-    practice_df['to_ger'] = practice_df['to_ger'].apply(lambda x: {datetime.datetime.fromisoformat(k): v for k, v in x.items()})
-    practice_df['to_eng'] = practice_df['to_eng'].apply(lambda x: {datetime.datetime.fromisoformat(k): v for k, v in x.items()})
+    practice_df['to_ger'] = practice_df['to_ger'].apply(
+        lambda x: {datetime.datetime.fromisoformat(k): v for k, v in x.items()})
+    practice_df['to_eng'] = practice_df['to_eng'].apply(
+        lambda x: {datetime.datetime.fromisoformat(k): v for k, v in x.items()})
+
+    to_ger_series = practice_df['to_ger'].apply(
+        lambda x: max([d for d, res in x.items() if not res])
+        if len([d for d, res in x.items() if not res]) != 0
+        else datetime.date(1970, 1, 1)
+    )
+
+    to_eng_series = practice_df['to_eng'].apply(
+        lambda x: max([d for d, res in x.items() if not res])
+        if len([d for d, res in x.items() if not res]) != 0
+        else datetime.date(1970, 1, 1)
+    )
 
     stats = {}
     for word, r in practice_df.T.to_dict().items():
@@ -82,6 +97,25 @@ if __name__ == "__main__":
     stats_df = pd.DataFrame(stats).T
     stats_df['cls'] = data_df.set_index("word")['cls']
 
+    # Overview Display
+    overview_df['perc_to_eng'] = stats_df['perc_to_eng'].round(2)
+    overview_df['perc_to_ger'] = stats_df['perc_to_ger'].round(2)
+    end_columns = ["verb_forms", "see_also"]
+    st.dataframe(overview_df[
+        [c for c in overview_df.columns if c not in end_columns] + end_columns
+        ].style.background_gradient(axis=0, subset=['perc_to_eng', 'perc_to_ger'], cmap='RdYlGn'))
+
+    with st.sidebar:
+        st.markdown(f"German special letters:  **ä, ö, ü, ß / Ä, Ö, Ü, ẞ**")
+        st.info("Worst words")
+        worst_words_df = overview_df[['perc_to_eng', 'perc_to_ger']].rename(columns={'perc_to_eng': '%_to_eng', 'perc_to_ger': '%_to_ger'})
+        worst_words_df['Avg.'] = worst_words_df.mean(axis=1)
+        worst_words_df = worst_words_df[['Avg.', '%_to_eng', '%_to_ger']].sort_values('Avg.', ascending=True)
+        st.dataframe(worst_words_df.style.background_gradient(axis=0, cmap='RdYlGn').format('{:.2f}'), height=100*len(worst_words_df))
+
+
+
+    # Pie charts
     labels = 'Success (To Ger)', 'Fail (To Ger)', 'Success (To Eng)', 'Fail (To Eng)'
     colors = ['#3D8DF5', '#ADCCF7', '#16A163', '#C7EBD1']
     explode = [0, 0, 0, 0]
@@ -132,19 +166,19 @@ if __name__ == "__main__":
     col2.markdown("**german -> english**")
     col2.line_chart(pd.DataFrame(by_date_to_eng).T)
 
-    st.subheader(f"Problematic words")
+    st.markdown("**Last failed words**")
     last_fails = pd.concat([
-        practice_df['to_ger'].apply(lambda x: max([d.date() for d, res in x.items() if not res]) if len(
+        practice_df['to_ger'].apply(lambda x: max([d for d, res in x.items() if not res]) if len(
             [d for d, res in x.items() if not res]) != 0 else datetime.date(1970, 1, 1)),
-        practice_df['to_eng'].apply(lambda x: max([d.date() for d, res in x.items() if not res]) if len(
+        practice_df['to_eng'].apply(lambda x: max([d for d, res in x.items() if not res]) if len(
             [d for d, res in x.items() if not res]) != 0 else datetime.date(1970, 1, 1)),
     ], axis=1).max(axis=1)
     last_fails_df = last_fails.sort_values().rename("Last fail").tail(10).to_frame()
-    last_fails_df["meaning"] = overview_df.set_index('word')['meaning']
+    last_fails_df["Last fail"] = last_fails_df["Last fail"].apply(lambda x: x.date())
+    last_fails_df["meaning"] = overview_df['meaning']
     st.dataframe(last_fails_df.T)
 
     st.header("Practice section")
-    st.markdown(f"German special letters:  **ä, ö, ü, ß / Ä, Ö, Ü, ẞ**")
     if st.checkbox(f"Open practice section"):
         fix_seed = st.number_input("Fix seed", value=datetime.date.today().month*100 + datetime.date.today().day)
         random.seed(fix_seed)
@@ -232,7 +266,6 @@ if __name__ == "__main__":
                 wir = cols_verb[1].text_input("wir (Verbs only)", None)
                 ihr = cols_verb[1].text_input("ihr (Verbs only)", None)
                 sie = cols_verb[1].text_input("sie (Verbs only)", None)
-
 
                 example_ger = st.text_input("Example in German", "---")
                 example_eng = st.text_input("Example in English", "---")
