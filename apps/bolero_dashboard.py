@@ -111,7 +111,7 @@ if __name__ == "__main__":
         worst_words_df = overview_df[['perc_to_eng', 'perc_to_ger']].rename(columns={'perc_to_eng': '%_to_eng', 'perc_to_ger': '%_to_ger'})
         worst_words_df['Avg.'] = worst_words_df.mean(axis=1)
         worst_words_df = worst_words_df[['Avg.', '%_to_eng', '%_to_ger']].sort_values('Avg.', ascending=True)
-        st.dataframe(worst_words_df.style.background_gradient(axis=0, cmap='RdYlGn').format('{:.2f}'), height=100*len(worst_words_df))
+        st.dataframe(worst_words_df.style.background_gradient(axis=0, cmap='RdYlGn').format('{:.2f}'), height=25*len(worst_words_df))
 
 
 
