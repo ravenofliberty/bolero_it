@@ -177,16 +177,17 @@ def performance_review_raport(stats_df, overview_df, practice_df):
 
 
 def practice_section(data_df, pm, worst_words, verbose=False):
-    fix_seed = st.number_input("Fix seed", value=datetime.date.today().month * 100 + datetime.date.today().day)
+
+    fix_seed = st.number_input("Fix seed", value=(datetime.date.today().month * 100 + datetime.date.today().day)*100)
     random.seed(fix_seed)
 
     category = st.selectbox("Select word type", ['All'] + list(Words.__members__.keys()))
-    difficulty = st.selectbox("Select difficulty", ['All', 'Difficult', 'Medium', 'Easy'])
+    difficulty = st.selectbox("Select difficulty", ['All', 'Difficult', 'Medium', 'Easy'], index=1)
 
     _df = data_df[data_df['cls'] == category] if category != 'All' else data_df
 
-    TRESHOLD_1 = round(worst_words['Avg.'].quantile(0.7),2)
-    TRESHOLD_2 = round(worst_words['Avg.'].quantile(0.3),2)
+    TRESHOLD_1 = round(worst_words['Avg.'].quantile(0.5),2)
+    TRESHOLD_2 = round(worst_words['Avg.'].quantile(0.2),2)
 
     st.info(f'Difficulty tresholds: {TRESHOLD_1} and {TRESHOLD_2}')
     if difficulty == 'All':
@@ -241,24 +242,44 @@ def practice_section(data_df, pm, worst_words, verbose=False):
         test_results = {k: {"to_eng": None, "to_ger": None} for k in random_words}
 
         # To Eng
+        errors = {}
         for k, v in test_answers_to_eng.items():
-            test_results[k]["to_eng"] = True if answer_key_to_eng[k] == v else False
+            if answer_key_to_eng[k] == v:
+                test_results[k]["to_eng"] = True
+            else:
+                test_results[k]["to_eng"] = False
+                errors[k] = {"answer": v, "correct_answer": answer_key_to_eng[k]}
 
         # To Ger
         for k, v in test_answers_to_ger.items():
             if word_cls_dict[k] == "Noun":
-                test_results[k]["to_ger"] = True if \
-                    (v.lower() == k.lower()) and \
-                    (DefiniteArticle[test_answers_to_ger_art[k]] == ARTICLE_MAPPING_NOMINATIVE[Gender[gender_dict[k]]]['definite']) \
-                    else False
+                # Todo: keep appending results
+                if v.lower() == k.lower() and DefiniteArticle[test_answers_to_ger_art[k]] == ARTICLE_MAPPING_NOMINATIVE[Gender[gender_dict[k]]]['definite']:
+                    test_results[k]["to_ger"] = True
+                else:
+                    test_results[k]["to_ger"] = False
+                    errors[k] = {
+                        "answer": f"{test_answers_to_ger_art[k]} {v}",
+                        "correct_answer": f"{ARTICLE_MAPPING_NOMINATIVE[Gender[gender_dict[k]]]['definite'].name} {k}"
+                    }
+
             elif word_cls_dict[k] == "Verb":
                 person = test_anwer_verb_map[k]
                 right_answer = verb_forms_dict[k][person]
-                test_results[k]["to_ger"] = True if v.lower() == right_answer.lower() else False
+                if v.lower() == right_answer.lower():
+                    test_results[k]["to_ger"] = True
+                else:
+                    test_results[k]["to_ger"] = False
+                    errors[k] = {"answer": v, "correct_answer": right_answer}
+
                 if verbose:
                     st.info(f"{k=}, {v=}, {right_answer=}")
             else:
-                test_results[k]["to_ger"] = True if v.lower() == k.lower() else False
+                if v.lower() == k.lower():
+                    test_results[k]["to_ger"] = True
+                else:
+                    test_results[k]["to_ger"] = False
+                    errors[k] = {"answer": v, "correct_answer": k}
 
         st.info(f"Test results:")
         test_results_df = pd.DataFrame(test_results)
@@ -268,6 +289,10 @@ def practice_section(data_df, pm, worst_words, verbose=False):
             st.info("Well done! Test passed")
         elif test_results_df.any().any():
             st.info(f"Could be better, some errors.")
+            st.dataframe(pd.DataFrame(errors).style.apply(lambda x: [
+                'background-color: pink' if x.name == 'answer' else 'background-color: #C7EBD1' for i in x
+            ], axis=1))
+
         else:
             st.error(f"Terrible, all wrong: {test_results}")
 
@@ -278,11 +303,11 @@ def practice_section(data_df, pm, worst_words, verbose=False):
 
             # To eng
             if res['to_eng'] is not None:
-                practice_data_result['to_eng'][(datetime.datetime.now() - datetime.timedelta(days=5)).isoformat()] = res['to_eng']
+                practice_data_result['to_eng'][(datetime.datetime.now() - datetime.timedelta(days=0)).isoformat()] = res['to_eng']
 
             # To ger
             if res['to_ger'] is not None:
-                practice_data_result['to_ger'][(datetime.datetime.now() - datetime.timedelta(days=5)).isoformat()] = res['to_ger']
+                practice_data_result['to_ger'][(datetime.datetime.now() - datetime.timedelta(days=0)).isoformat()] = res['to_ger']
 
             pm.update_practice_data(word, practice_data_result)
 
@@ -321,7 +346,7 @@ def edit_section(data_df, pm):
 
         example = {"---": "---"}
         if example_eng != "---" or example_ger != "---":
-            assert example_eng != "---" and example_ger != "---", f"Example must be in eng and ger"
+            assert example_eng != "---" and example_ger != "---", f"Example must be in both eng and ger"
             example = {example_ger: example_eng}
 
         if submitted_insert:
@@ -386,6 +411,7 @@ def edit_section(data_df, pm):
             see_also_2 = st.text_input("See Also 2", data_json["see_also"][1])
 
             creation_date = st.date_input("Creation date", datetime.date.fromisoformat(data_json["creation_date"])).isoformat()
+            practice_data = data_json["practice_data"]
 
             submitted_update = st.form_submit_button("Update word")
 
@@ -403,10 +429,7 @@ def edit_section(data_df, pm):
                 "example": example,
                 "tags": [tag_1, tag_2, tag_3],
                 "see_also": [see_also_1, see_also_2],
-                "practice_data": {
-                    "to_ger": {},
-                    "to_eng": {},
-                },
+                "practice_data": practice_data,
                 "verb_forms": {
                     "ich": ich,
                     "du": du,

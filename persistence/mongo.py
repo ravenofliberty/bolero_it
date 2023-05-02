@@ -18,8 +18,8 @@ def get_client():
     return pymongo.MongoClient('mongodb://localhost:27017/').bolero
 
 
-def ignore_case(word:str):
-    return re.compile(word, re.IGNORECASE)
+def ignore_case(word: str):
+    return re.compile(f"^{word}$", re.IGNORECASE)
 
 
 class PersistenceManager:

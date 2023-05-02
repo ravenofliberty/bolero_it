@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+import pandas as pd
+
 
 class Words(Enum):
     Noun = 1
@@ -18,6 +20,7 @@ class Tags(Enum):
     Family = 3
     Politics = 4
     Economy = 5
+    Taste = 6
 
 
 class DefiniteArticle(Enum):
@@ -80,3 +83,6 @@ class VerbForms:
         for k in json.keys():
             assert k in cls.get_persons(), f"Unknown person: {k}"
         return VerbForms(**json)
+
+    # def __repr__(self):
+    #     return self.to_json()
