@@ -1,21 +1,16 @@
 import logging
-from typing import Union
 import pymongo
 import datetime
 import re
 from typing import List
 
-from enum import Enum
-import numpy as np
-import pandas as pd
-
-from words.word_metadata import Tags, Gender, Words, VerbForms
+from bolero_it.words.word_metadata import Tags, Gender, Words, VerbForms
 
 logger = logging.getLogger(__name__)
 
 
 def get_client():
-    return pymongo.MongoClient('mongodb://localhost:27017/').bolero
+    return pymongo.MongoClient('mongodb://localhost:27017/').bolero_it
 
 
 def ignore_case(word: str):

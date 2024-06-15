@@ -5,11 +5,8 @@ from typing import List, Dict
 from enum import Enum
 import inspect
 
-import pandas as pd
-import numpy as np
-
-from persistence.mongo import PersistenceManager
-from words.word_metadata import Tags, Gender, IndefiniteArticle, DefiniteArticle, Words, VerbForms
+from bolero_it.persistence.mongo import PersistenceManager
+from bolero_it.words.word_metadata import Tags, Gender, Words, VerbForms
 
 logger = logging.getLogger(__name__)
 

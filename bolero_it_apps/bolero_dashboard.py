@@ -1,15 +1,9 @@
-import logging
-import datetime
 import random
 
-import pandas as pd
-import numpy as np
 import streamlit as st
-import matplotlib.pyplot as plt
 
-from words.word_metadata import Gender, Tags, Words
-from persistence.mongo import PersistenceManager
-from bolero_apps.bolero_dashboard_reports import (
+from bolero_it.persistence.mongo import PersistenceManager
+from bolero_it_apps.bolero_dashboard_reports import (
     get_data, performance_review_raport, practice_section, edit_section
 )
 
@@ -32,7 +26,7 @@ if __name__ == "__main__":
         initial_sidebar_state='auto',
     )
 
-    st.title(f'Project Bolero')
+    st.title(f'Project Bolero IT')
 
     pm = PersistenceManager()
 

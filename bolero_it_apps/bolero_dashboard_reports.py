@@ -1,17 +1,15 @@
-import logging
 import datetime
 import random
 
 import pandas as pd
-import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 
-from words.word_metadata import (
+from bolero_it.words.word_metadata import (
     Gender, Tags, Words, DefiniteArticle, ARTICLE_MAPPING_NOMINATIVE, VerbForms
 )
-from persistence.mongo import PersistenceManager
-from bolero_apps.apps_utils import get_figure
+from bolero_it.persistence.mongo import PersistenceManager
+from bolero_it_apps.apps_utils import get_figure
 
 
 def get_random_n_from_list(n, l):

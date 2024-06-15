@@ -1,15 +1,7 @@
-import datetime
 import logging
-from typing import List, Dict
-from enum import Enum
-import inspect
 
-import pandas as pd
-import numpy as np
-
-from persistence.mongo import PersistenceManager
-from words.word_metadata import Tags, Gender, IndefiniteArticle, DefiniteArticle, ARTICLE_MAPPING_NOMINATIVE
-from words.word import Word
+from bolero_it.words.word_metadata import ARTICLE_MAPPING_NOMINATIVE
+from bolero_it.words.word import Word
 
 logger = logging.getLogger(__name__)
 
