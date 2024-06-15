@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # Sidebar
     with st.sidebar:
-        st.markdown(f"German special letters:  **ä, ö, ü, ß / Ä, Ö, Ü, ẞ**")
+        st.markdown(f"Italian special letters:  **À, È, Ù | à, è**")
         st.info("Worst words")
         st.dataframe(worst_words_df.style.background_gradient(axis=0, cmap='RdYlGn').format('{:.2f}'),
                      height=25 * len(worst_words_df))
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     end_columns = ["verb_forms", "see_also"]
     st.dataframe(overview_df[
         [c for c in overview_df.columns if c not in end_columns] + end_columns
-        ].style.background_gradient(axis=0, subset=['perc_to_eng', 'perc_to_ger'], cmap='RdYlGn'))
+        ].style.background_gradient(axis=0, subset=['perc_to_eng', 'perc_to_it'], cmap='RdYlGn'))
 
     # Performance Review
     st.header("Performance Review")

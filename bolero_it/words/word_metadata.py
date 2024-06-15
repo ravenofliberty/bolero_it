@@ -24,58 +24,54 @@ class Tags(Enum):
 
 
 class DefiniteArticle(Enum):
-    der = 1
-    die = 2
-    das = 3
-    dem = 4
-    den = 5
-    des = 6
+    il = 1
+    la = 2
+    lo = 3
+    i = 4
+    gli = 5
+    le = 6
 
 
 class IndefiniteArticle(Enum):
-    ein = 1
-    eine = 2
-    einen = 3
-    einem = 4
-    einer = 5
-    eines = 6
+    un = 1
+    una = 2
+    uno = 3
+    un_a = 4  # un'  - un - appostroph
 
 
 class Gender(Enum):
-    masculinum = 1
-    femininum = 2
-    neutrum = 3
-    NA = 4
+    maschile = 1
+    femminile = 2
+    NA = 3
 
 
 ARTICLE_MAPPING_NOMINATIVE = {
-    Gender.masculinum: {'definite': DefiniteArticle.der, 'indefinite': IndefiniteArticle.ein},
-    Gender.femininum: {'definite': DefiniteArticle.die, 'indefinite': IndefiniteArticle.eine},
-    Gender.neutrum: {'definite': DefiniteArticle.das, 'indefinite': IndefiniteArticle.ein},
+    Gender.maschile: {'definite': DefiniteArticle.il, 'indefinite': IndefiniteArticle.un},
+    Gender.femminile: {'definite': DefiniteArticle.la, 'indefinite': IndefiniteArticle.una},
 }
 
 
 @dataclass
 class VerbForms:
-    ich: str
-    du: str
-    er: str
-    wir: str
-    ihr: str
-    sie: str
+    io: str
+    tu: str
+    lui: str
+    noi: str
+    voi: str
+    loro: str
 
     @classmethod
     def get_persons(cls):
-        return ["ich", "du", "er", "wir", "ihr", "sie"]
+        return ["io", "tu", "lui", "noi", "voi", "loro"]
 
     def to_json(self):
         return {
-            "ich": self.ich,
-            "du": self.du,
-            "er": self.er,
-            "wir": self.wir,
-            "ihr": self.ihr,
-            "sie": self.sie
+            "io": self.io,
+            "tu": self.tu,
+            "lui": self.lui,
+            "noi": self.noi,
+            "voi": self.voi,
+            "loro": self.loro
         }
 
     @classmethod

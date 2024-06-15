@@ -15,7 +15,7 @@ class Verb(Word):
         super().__init__(**kwargs)
 
     def __getattr__(self, item):
-        if item in ["ich", "du", "er", "wir", "ihr", "sie"]:
+        if item in ["io", "tu", "lui", "noi", "voi", "loro"]:
             return getattr(self.verb_forms, item)
 
     def __repr__(self):
