@@ -26,7 +26,7 @@ def get_random_n_from_list(n, l):
 
 if __name__ == "__main__":
     st.set_page_config(
-        page_title='Bolero',
+        page_title='Bolero IT',
         page_icon=":smiley:",
         layout='wide',
         initial_sidebar_state='auto',
